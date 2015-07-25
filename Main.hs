@@ -32,12 +32,13 @@ data Languages =
 instance FromJSON Languages where
     parseJSON (Object p) = do
         querycontinue <- p .:? "query-continue"
-        let gcmcontinue = case querycontinue of
-                              Just ob -> fmap Just $ (ob .: "categorymembers") >>=
-                                            (.: "gcmcontinue")
-                              Nothing -> return Nothing
+        let gcmcontinue 
+                = case querycontinue of
+                      Just ob -> fmap Just $ (ob .: "categorymembers") >>=
+                                                (.: "gcmcontinue")
+                      Nothing -> return Nothing
 
-            pages      = (p .: "query") >>= (.: "pages") 
+            pages = (p .: "query") >>= (.: "pages") 
         Languages <$> gcmcontinue <*> pages
 
 baseQuery = "http://rosettacode.org/mw/api.php?format=json&action=query&generator=categorymembers&gcmtitle=Category:Programming%20Languages&gcmlimit=500&prop=categoryinfo" 
@@ -57,5 +58,5 @@ runQuery query = do
 main :: IO ()
 main = do 
     allLanguages <- runQuery baseQuery
-    mapM_ showPage $ sortBy (flip compare `on` size) allLanguages
-        where showPage pg = putStrLn $ drop 9 (title pg) ++ " " ++ show  (size pg)
+    mapM_ showPage $ zip [1..] $ sortBy (flip compare `on` size) allLanguages
+        where showPage pg = putStrLn $ show (fst pg) ++ " " ++ drop 9 (title $ snd pg) ++ " " ++ show  (size $ snd pg)
