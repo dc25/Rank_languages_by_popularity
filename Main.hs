@@ -28,15 +28,15 @@ instance FromJSON Language where
 
 data Report =
     Report { 
-        gcmcontinue    :: Maybe String,
-        languages      :: M.Map String Language
+        continue    :: Maybe String,
+        languages   :: M.Map String Language
     } deriving (Show)
 
 instance FromJSON Report where
     parseJSON (Object p) = do
         querycontinue <- p .:? "query-continue"
 
-        let gcmcontinue 
+        let continue 
                 = case querycontinue of
                       Just ob -> fmap Just $ 
                                      (ob .: "categorymembers") >>= 
@@ -45,9 +45,14 @@ instance FromJSON Report where
 
             languages = (p .: "query") >>= (.: "pages") 
 
-        Report <$> gcmcontinue <*> languages
+        Report <$> continue <*> languages
 
-baseQuery = "http://rosettacode.org/mw/api.php?format=json&action=query&generator=categorymembers&gcmtitle=Category:Programming%20Languages&gcmlimit=500&prop=categoryinfo" 
+queryStr = "http://rosettacode.org/mw/api.php?" ++ 
+           "format=json" ++ 
+           "&action=query" ++ 
+           "&generator=categorymembers" ++ 
+           "&gcmtitle=Category:Programming%20Languages" ++ 
+           "&gcmlimit=500&prop=categoryinfo" 
 
 runQuery :: String -> IO [Language]
 runQuery query = do
@@ -55,17 +60,17 @@ runQuery query = do
 
     let res = map snd $ M.toList $ languages report 
 
-    moreRes <- case gcmcontinue report of
+    moreRes <- case continue report of
                       Nothing -> return []
-                      Just cs -> runQuery $ 
-                                     baseQuery 
-                                         ++ "&gcmcontinue=" 
-                                         ++ urlEncode cs
+                      Just continueStr -> runQuery $ 
+                                              queryStr ++ 
+                                              "&gcmcontinue=" ++ 
+                                              urlEncode continueStr
     return $ res ++ moreRes
 
 main :: IO ()
 main = do 
-    allLanguages <- runQuery baseQuery
+    allLanguages <- runQuery queryStr
 
     mapM_ showPage $ 
           zip [1..] $ 
