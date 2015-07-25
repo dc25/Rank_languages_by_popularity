@@ -3,17 +3,18 @@
 import Data.Aeson 
 import Network.HTTP.Base (urlEncode)
 import Network.HTTP.Conduit (simpleHttp)
-import Data.List (sortBy)
+import Data.List (sortBy, groupBy)
 import Data.Function (on)
+import Data.Map (Map, toList)
 
-import qualified Data.Map as M
-
+-- Record representing a single language.  
 data Language =
     Language { 
         name      :: String,
         quantity  :: Int
     } deriving (Show)
 
+-- Make Language an instance of FromJSON for parsing of query response.
 instance FromJSON Language where
     parseJSON (Object p) = do
         categoryInfo <- p .:? "categoryinfo" 
@@ -26,12 +27,15 @@ instance FromJSON Language where
 
         Language <$> name <*> quantity
 
+-- Record representing entire response to query.  
+-- Contains collection of languages and optional continuation string.
 data Report =
     Report { 
         continue    :: Maybe String,
-        languages   :: M.Map String Language
+        languages   :: Map String Language
     } deriving (Show)
 
+-- Make Report an instance of FromJSON for parsing of query response.
 instance FromJSON Report where
     parseJSON (Object p) = do
         querycontinue <- p .:? "query-continue"
@@ -47,19 +51,23 @@ instance FromJSON Report where
 
         Report <$> continue <*> languages
 
+-- Mediawiki api style query to send to rosettacode.org
 queryStr = "http://rosettacode.org/mw/api.php?" ++ 
            "format=json" ++ 
            "&action=query" ++ 
            "&generator=categorymembers" ++ 
            "&gcmtitle=Category:Programming%20Languages" ++ 
-           "&gcmlimit=500&prop=categoryinfo" 
+           "&gcmlimit=100" ++ 
+           "&prop=categoryinfo" 
 
+-- Issue query to get a list of Language descriptions
 runQuery :: String -> IO [Language]
 runQuery query = do
     Just report <- decode <$> simpleHttp query 
 
-    let res = map snd $ M.toList $ languages report 
+    let res = map snd $ toList $ languages report 
 
+    -- If there is a continue string, recusively continue the query.
     moreRes <- case continue report of
                       Nothing -> return []
                       Just continueStr -> runQuery $ 
@@ -68,16 +76,29 @@ runQuery query = do
                                               urlEncode continueStr
     return $ res ++ moreRes
 
+-- Pretty print languages and ranks 
+showRanking :: (Int,  [Language]) -> IO ()
+showRanking languageGroup = do
+    let ranking = fst languageGroup
+    let languages = snd languageGroup
+    let tie = length languages > 1
+
+    mapM_ (showLanguage ranking tie) languages
+
+    where showLanguage r t lang = 
+              let rankStr = show r
+              in putStrLn $ rankStr ++ "." ++ 
+                            replicate (4 - length rankStr) ' ' ++
+                            (if t then " (tie)" else "      ") ++
+                            " " ++ drop 9 (name lang) ++
+                            " - " ++ show  (quantity lang) 
+
 main :: IO ()
 main = do 
     allLanguages <- runQuery queryStr
 
-    mapM_ showPage $ 
+    mapM_ showRanking $ 
           zip [1..] $ 
+          groupBy ((==) `on` quantity) $
           sortBy (flip compare `on` quantity) allLanguages
 
-        where showPage pg 
-                  = putStrLn $ 
-                        show (fst pg) ++ 
-                        " " ++ drop 9 (name $ snd pg) ++ 
-                        " " ++ show  (quantity $ snd pg)
