@@ -17,7 +17,7 @@ cabal-version:       >=1.10
 
 executable Rank-languages-by-popularity
   main-is:             Main.hs
-  -- other-modules:       
+  other-modules:       RosettaApi
   other-extensions:    OverloadedStrings
   build-depends:       base, aeson, HTTP, http-conduit, containers
   -- hs-source-dirs:      
