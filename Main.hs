@@ -7,6 +7,15 @@ import Data.List (sortBy, groupBy)
 import Data.Function (on)
 import Data.Map (Map, toList)
 
+-- Mediawiki api style query to send to rosettacode.org
+queryStr = "http://rosettacode.org/mw/api.php?" ++ 
+           "format=json" ++ 
+           "&action=query" ++ 
+           "&generator=categorymembers" ++ 
+           "&gcmtitle=Category:Programming%20Languages" ++ 
+           "&gcmlimit=100" ++ 
+           "&prop=categoryinfo" 
+
 -- Record representing a single language.  
 data Language =
     Language { 
@@ -73,15 +82,6 @@ showLanguages allLanguages =
           zip [1..] $ 
           groupBy ((==) `on` quantity) $
           sortBy (flip compare `on` quantity) allLanguages
-
--- Mediawiki api style query to send to rosettacode.org
-queryStr = "http://rosettacode.org/mw/api.php?" ++ 
-           "format=json" ++ 
-           "&action=query" ++ 
-           "&generator=categorymembers" ++ 
-           "&gcmtitle=Category:Programming%20Languages" ++ 
-           "&gcmlimit=100" ++ 
-           "&prop=categoryinfo" 
 
 -- Issue query to get a list of Language descriptions
 runQuery :: [Language] -> String -> IO ()
