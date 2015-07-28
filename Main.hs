@@ -18,6 +18,7 @@ import GHCJS.DOM.HTMLDivElement (castToHTMLDivElement)
 import GHCJS.DOM.HTMLScriptElement (castToHTMLScriptElement, htmlScriptElementSetSrc)
 import GHCJS.DOM.HTMLParagraphElement (castToHTMLParagraphElement)
 import GHCJS.DOM.HTMLTableElement (HTMLTableElement, castToHTMLTableElement)
+import GHCJS.DOM.HTMLTableCaptionElement (castToHTMLTableCaptionElement)
 import GHCJS.DOM.HTMLTableRowElement (castToHTMLTableRowElement)
 import GHCJS.DOM.HTMLTableCellElement (castToHTMLTableCellElement)
 
@@ -72,6 +73,11 @@ showLanguages allLanguages = do
     Just table <- fmap castToHTMLTableElement <$> 
                       documentCreateElement doc ("table" :: String)
 
+    Just caption <- fmap castToHTMLTableCaptionElement <$> 
+                      documentCreateElement doc ("caption" :: String)
+
+    htmlElementSetInnerText caption $ ("Rosetta Code Language Rankings" :: String)
+
     Just row <- fmap castToHTMLTableRowElement <$> 
                       documentCreateElement doc ("tr" :: String)
 
@@ -94,6 +100,7 @@ showLanguages allLanguages = do
     nodeAppendChild row (Just pName)
     nodeAppendChild row (Just pQuantity)
 
+    nodeAppendChild table (Just caption)
     nodeAppendChild table (Just row)
 
     mapM_ (showRanking doc table) $ 
@@ -130,7 +137,7 @@ respondToQuery ls response = do
             runQuery accLanguages continueQueryStr
 
 foreign import javascript unsafe 
-    "cb = function(json) {  console.log (\"Hello World!\"); $1(JSON.stringify(json)); }"
+    "cb = function(json) { $1(JSON.stringify(json)); }"
     js_set_cb :: JSFun a -> IO ()
 
 setQueryResponseCallback :: (T.Text -> IO ()) -> IO ()
