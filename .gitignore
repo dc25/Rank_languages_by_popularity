@@ -1,1 +1,5 @@
 dist/
+Setup.hs
+.*.swp
+.*.swo
+*~
