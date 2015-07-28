@@ -37,13 +37,8 @@ showLanguage doc table rank tie (Language languageName languageQuantity) = do
     Just pRank <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("td" :: String)
 
-    htmlElementSetInnerText pRank $ show rank
-
-    Just pTie <- fmap castToHTMLTableCellElement <$> 
-                      documentCreateElement doc ("td" :: String)
-
-    let tieString = (if tie then " (tie)" else "") :: String
-    htmlElementSetInnerText pTie $ tieString
+    let rankString = show rank ++ (if tie then " (tie)" else "") :: String
+    htmlElementSetInnerText pRank $ rankString
 
     Just pName <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("td" :: String)
@@ -56,7 +51,6 @@ showLanguage doc table rank tie (Language languageName languageQuantity) = do
     htmlElementSetInnerText pQuantity $ show languageQuantity
 
     nodeAppendChild row (Just pRank)
-    nodeAppendChild row (Just pTie)
     nodeAppendChild row (Just pName)
     nodeAppendChild row (Just pQuantity)
 
@@ -64,9 +58,13 @@ showLanguage doc table rank tie (Language languageName languageQuantity) = do
     return ()
 
 -- Pretty print languages with common rank
-showRanking :: (Int,  [Language]) -> IO ()
-showRanking (ranking, languages) = do
+showRanking :: Document -> HTMLTableElement -> (Int,  [Language]) -> IO ()
+showRanking doc table (ranking, languages) = 
+    mapM_ (showLanguage doc table ranking $ length languages > 1) languages
 
+-- Sort and group languages by rank, then pretty print them.
+showLanguages :: [Language] -> IO ()
+showLanguages allLanguages = do
     Just webView <- currentWindow
     Just doc <- webViewGetDomDocument webView
     Just body <- documentGetBody doc
@@ -74,17 +72,37 @@ showRanking (ranking, languages) = do
     Just table <- fmap castToHTMLTableElement <$> 
                       documentCreateElement doc ("table" :: String)
 
-    mapM_ (showLanguage doc table ranking $ length languages > 1) languages
-    nodeAppendChild body (Just table)
-    return ()
+    Just row <- fmap castToHTMLTableRowElement <$> 
+                      documentCreateElement doc ("tr" :: String)
 
--- Sort and group languages by rank, then pretty print them.
-showLanguages :: [Language] -> IO ()
-showLanguages allLanguages =
-    mapM_ showRanking $ 
+    Just pRank <- fmap castToHTMLTableCellElement <$> 
+                      documentCreateElement doc ("th" :: String)
+
+    htmlElementSetInnerText pRank $ ("Rank" :: String)
+
+    Just pName <- fmap castToHTMLTableCellElement <$> 
+                      documentCreateElement doc ("th" :: String)
+
+    htmlElementSetInnerText pName $ ("Language" :: String)
+
+    Just pQuantity <- fmap castToHTMLTableCellElement <$> 
+                      documentCreateElement doc ("th" :: String)
+
+    htmlElementSetInnerText pQuantity $ ("Completed Tasks" :: String)
+
+    nodeAppendChild row (Just pRank)
+    nodeAppendChild row (Just pName)
+    nodeAppendChild row (Just pQuantity)
+
+    nodeAppendChild table (Just row)
+
+    mapM_ (showRanking doc table) $ 
           zip [1..] $ 
           groupBy ((==) `on` quantity) $
           sortBy (flip compare `on` quantity) allLanguages
+
+    nodeAppendChild body (Just table)
+    return ()
 
 -- Mediawiki api style query to send to rosettacode.org
 queryStr :: String
