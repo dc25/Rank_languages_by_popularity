@@ -68,7 +68,8 @@ respondToQuery ls response = do
                    "&gcmcontinue=" ++ urlEncode continueStr
             runQuery accLanguages continueQueryStr
 
-foreign import javascript unsafe "cb_ = $1"
+foreign import javascript unsafe 
+    "cb = function(json) {  console.log (\"Hello World!\"); $1(JSON.stringify(json)); }"
     js_set_cb :: JSFun a -> IO ()
 
 setQueryResponseCallback :: (T.Text -> IO ()) -> IO ()
@@ -83,7 +84,8 @@ runQuery ls query = do
     Just webView <- currentWindow
     Just doc <- webViewGetDomDocument webView
     Just body <- documentGetBody doc
-    Just newScript <- fmap castToHTMLScriptElement <$> documentCreateElement doc ("script" :: String)
+    Just newScript <- fmap castToHTMLScriptElement <$> 
+                      documentCreateElement doc ("script" :: String)
     htmlScriptElementSetSrc newScript query
     nodeAppendChild body (Just newScript)
     return ()
