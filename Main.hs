@@ -1,16 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Data.Aeson 
+import Data.Aeson (decode)
 import Network.HTTP.Base (urlEncode)
 import Network.HTTP.Conduit (simpleHttp)
 import Data.List (sortBy, groupBy)
 import Data.Function (on)
 import Data.Map (Map, toList)
 import Data.ByteString.Lazy (ByteString)
---import qualified Data.Text.Lazy as T
 import Data.Text.Lazy (Text)
 import Data.Text.Lazy.Encoding (encodeUtf8)
-
 
 import GHCJS.DOM (webViewGetDomDocument, runWebGUI, WebView, currentWindow)
 import GHCJS.DOM.Document (documentGetBody, documentCreateElement,Document)
@@ -22,7 +20,6 @@ import GHCJS.DOM.HTMLTableElement (HTMLTableElement, castToHTMLTableElement)
 import GHCJS.DOM.HTMLTableCaptionElement (castToHTMLTableCaptionElement)
 import GHCJS.DOM.HTMLTableRowElement (castToHTMLTableRowElement)
 import GHCJS.DOM.HTMLTableCellElement (castToHTMLTableCellElement)
-
 import GHCJS.DOM.Node (nodeAppendChild)
 import GHCJS.Foreign (syncCallback1, ForeignRetention(NeverRetain), fromJSString)
 import GHCJS.Types (JSFun)
