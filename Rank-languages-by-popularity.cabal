@@ -7,8 +7,8 @@ version:             0.1.0.0
 -- description:         
 -- license:             
 license-file:        LICENSE
--- author:              
--- maintainer:          
+author:              Dave Compton
+maintainer:          davecompton7@gmail.com
 -- copyright:           
 -- category:            
 build-type:          Simple
@@ -17,8 +17,8 @@ cabal-version:       >=1.10
 
 executable Rank-languages-by-popularity
   main-is:             Main.hs
-  other-modules:       RosettaApi
+  -- other-modules:       
   other-extensions:    OverloadedStrings
-  build-depends:       base, aeson, HTTP, http-conduit, containers
+  build-depends:       base, ghcjs-base, ghcjs-dom, http-conduit, HTTP, containers, aeson, bytestring, text
   -- hs-source-dirs:      
   default-language:    Haskell2010
