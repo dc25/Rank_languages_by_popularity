@@ -12,8 +12,15 @@ import qualified Data.Text.Lazy.Encoding as TE
 
 
 import GHCJS.DOM (webViewGetDomDocument, runWebGUI, WebView, currentWindow)
-import GHCJS.DOM.Document (documentGetBody, documentCreateElement)
+import GHCJS.DOM.Document (documentGetBody, documentCreateElement,Document)
+import GHCJS.DOM.HTMLElement (htmlElementSetInnerText)
+import GHCJS.DOM.HTMLDivElement (castToHTMLDivElement)
 import GHCJS.DOM.HTMLScriptElement (castToHTMLScriptElement, htmlScriptElementSetSrc)
+import GHCJS.DOM.HTMLParagraphElement (castToHTMLParagraphElement)
+import GHCJS.DOM.HTMLTableElement (HTMLTableElement, castToHTMLTableElement)
+import GHCJS.DOM.HTMLTableRowElement (castToHTMLTableRowElement)
+import GHCJS.DOM.HTMLTableCellElement (castToHTMLTableCellElement)
+
 import GHCJS.DOM.Node (nodeAppendChild)
 import GHCJS.Foreign (syncCallback1, ForeignRetention(NeverRetain), fromJSString)
 import GHCJS.Types (JSFun)
@@ -21,19 +28,55 @@ import GHCJS.Types (JSFun)
 import RosettaApi
 
 -- Pretty print a single language
-showLanguage :: Int -> Bool -> Language -> IO ()
-showLanguage rank tie (Language languageName languageQuantity) = 
-    let rankStr = show rank
-    in putStrLn $ rankStr ++ "." ++ 
-                      replicate (4 - length rankStr) ' ' ++
-                      (if tie then " (tie)" else "      ") ++
-                      " " ++ drop 9 languageName ++
-                      " - " ++ show languageQuantity
+showLanguage :: Document -> HTMLTableElement -> Int -> Bool -> Language -> IO ()
+showLanguage doc table rank tie (Language languageName languageQuantity) = do
+
+    Just row <- fmap castToHTMLTableRowElement <$> 
+                      documentCreateElement doc ("tr" :: String)
+
+    Just pRank <- fmap castToHTMLTableCellElement <$> 
+                      documentCreateElement doc ("td" :: String)
+
+    htmlElementSetInnerText pRank $ show rank
+
+    Just pTie <- fmap castToHTMLTableCellElement <$> 
+                      documentCreateElement doc ("td" :: String)
+
+    let tieString = (if tie then " (tie)" else "") :: String
+    htmlElementSetInnerText pTie $ tieString
+
+    Just pName <- fmap castToHTMLTableCellElement <$> 
+                      documentCreateElement doc ("td" :: String)
+
+    htmlElementSetInnerText pName $ ( drop 9 languageName )
+
+    Just pQuantity <- fmap castToHTMLTableCellElement <$> 
+                      documentCreateElement doc ("td" :: String)
+
+    htmlElementSetInnerText pQuantity $ show languageQuantity
+
+    nodeAppendChild row (Just pRank)
+    nodeAppendChild row (Just pTie)
+    nodeAppendChild row (Just pName)
+    nodeAppendChild row (Just pQuantity)
+
+    nodeAppendChild table (Just row)
+    return ()
 
 -- Pretty print languages with common rank
 showRanking :: (Int,  [Language]) -> IO ()
-showRanking (ranking, languages) = 
-    mapM_ (showLanguage ranking $ length languages > 1) languages
+showRanking (ranking, languages) = do
+
+    Just webView <- currentWindow
+    Just doc <- webViewGetDomDocument webView
+    Just body <- documentGetBody doc
+
+    Just table <- fmap castToHTMLTableElement <$> 
+                      documentCreateElement doc ("table" :: String)
+
+    mapM_ (showLanguage doc table ranking $ length languages > 1) languages
+    nodeAppendChild body (Just table)
+    return ()
 
 -- Sort and group languages by rank, then pretty print them.
 showLanguages :: [Language] -> IO ()
