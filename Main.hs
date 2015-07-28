@@ -7,8 +7,9 @@ import Data.List (sortBy, groupBy)
 import Data.Function (on)
 import Data.Map (Map, toList)
 import Data.ByteString.Lazy (ByteString)
-import qualified Data.Text.Lazy as T
-import qualified Data.Text.Lazy.Encoding as TE
+--import qualified Data.Text.Lazy as T
+import Data.Text.Lazy (Text)
+import Data.Text.Lazy.Encoding (encodeUtf8)
 
 
 import GHCJS.DOM (webViewGetDomDocument, runWebGUI, WebView, currentWindow)
@@ -122,9 +123,9 @@ queryStr = "http://rosettacode.org/mw/api.php?" ++
            "&prop=categoryinfo" ++
            "&callback=cb" 
 
-respondToQuery :: [Language] -> T.Text -> IO ()
+respondToQuery :: [Language] -> Text -> IO ()
 respondToQuery ls response = do
-    let Just (Report continue langs) = decode  (TE.encodeUtf8 response)
+    let Just (Report continue langs) = decode $ encodeUtf8 response
     let accLanguages = ls ++ map snd (toList langs)
 
     -- If there is a continue string, recusively continue the query.
@@ -140,10 +141,10 @@ foreign import javascript unsafe
     "cb = function(json) { $1(JSON.stringify(json)); }"
     js_set_cb :: JSFun a -> IO ()
 
-setQueryResponseCallback :: (T.Text -> IO ()) -> IO ()
+setQueryResponseCallback :: (Text -> IO ()) -> IO ()
 setQueryResponseCallback cb = do
-    cb <- syncCallback1 NeverRetain False (cb.fromJSString)
-    js_set_cb cb
+    responder <- syncCallback1 NeverRetain False (cb.fromJSString)
+    js_set_cb responder
 
 -- Issue query to get a list of Language descriptions
 runQuery :: [Language] -> String -> IO ()
