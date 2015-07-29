@@ -1,5 +1,12 @@
-dist/
 Setup.hs
 .*.swp
 .*.swo
 *~
+dist/build/Rank-languages-by-popularity/Rank-languages-by-popularity-tmp/
+dist/build/Rank-languages-by-popularity/Rank-languages-by-popularity.jsexe/all.js
+dist/build/Rank-languages-by-popularity/Rank-languages-by-popularity.jsexe/manifest.webapp
+dist/build/Rank-languages-by-popularity/Rank-languages-by-popularity.jsexe/out.stats
+dist/build/autogen/
+dist/package.conf.inplace/
+dist/setup-config
+
