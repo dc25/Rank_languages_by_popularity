@@ -89,9 +89,11 @@ runQuery ls query = do
     Just (Report continue langs) <- decode <$> simpleHttp query 
     let accLanguages = ls ++ map snd (toList langs)
 
-    -- If there is a continue string, recusively continue the query.
     case continue of
+        -- If there is no continue string we are done so display the accumulated languages.
         Nothing -> showLanguages accLanguages
+
+        -- If there is a continue string, recursively continue the query.
         Just continueStr -> do
             let continueQueryStr = queryStr ++ "&gcmcontinue=" ++ urlEncode continueStr
             runQuery accLanguages continueQueryStr
