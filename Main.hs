@@ -30,30 +30,36 @@ import RosettaApi
 showLanguage :: Document -> HTMLTableElement -> Int -> Bool -> Language -> IO ()
 showLanguage doc table rank tie (Language languageName languageQuantity) = do
 
+    -- Add a new row to the table.
     Just row <- fmap castToHTMLTableRowElement <$> 
                       documentCreateElement doc ("tr" :: String)
+    nodeAppendChild table (Just row)
 
+    -- Add a ranking entry to the new row.
     Just pRank <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("td" :: String)
 
     let rankString = show rank ++ (if tie then " (tie)" else "") :: String
     htmlElementSetInnerText pRank $ rankString
 
+    nodeAppendChild row (Just pRank)
+
+    -- Add a name entry to the new row.
     Just pName <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("td" :: String)
 
     htmlElementSetInnerText pName $ ( drop 9 languageName )
 
+    nodeAppendChild row (Just pName)
+
+    -- Add a quantity entry to the new row.
     Just pQuantity <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("td" :: String)
 
     htmlElementSetInnerText pQuantity $ show languageQuantity
 
-    nodeAppendChild row (Just pRank)
-    nodeAppendChild row (Just pName)
     nodeAppendChild row (Just pQuantity)
 
-    nodeAppendChild table (Just row)
     return ()
 
 -- Pretty print languages with common rank
@@ -71,41 +77,53 @@ showLanguages allLanguages = do
     Just table <- fmap castToHTMLTableElement <$> 
                       documentCreateElement doc ("table" :: String)
 
+    -- Add a caption to the table
     Just caption <- fmap castToHTMLTableCaptionElement <$> 
                       documentCreateElement doc ("caption" :: String)
 
+
     htmlElementSetInnerText caption $ ("Rosetta Code Language Rankings" :: String)
 
+    nodeAppendChild table (Just caption)
+
+    -- Add a header row to the table.
     Just row <- fmap castToHTMLTableRowElement <$> 
                       documentCreateElement doc ("tr" :: String)
 
+    nodeAppendChild table (Just row)
+
+    -- Add a rank header to the header row.
     Just pRank <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("th" :: String)
 
     htmlElementSetInnerText pRank $ ("Rank" :: String)
 
+    nodeAppendChild row (Just pRank)
+
+    -- Add a language name header to the header row.
     Just pName <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("th" :: String)
 
     htmlElementSetInnerText pName $ ("Language" :: String)
 
+    nodeAppendChild row (Just pName)
+
+    -- Add a quantity header to the header row.
     Just pQuantity <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("th" :: String)
 
     htmlElementSetInnerText pQuantity $ ("Completed Tasks" :: String)
 
-    nodeAppendChild row (Just pRank)
-    nodeAppendChild row (Just pName)
     nodeAppendChild row (Just pQuantity)
 
-    nodeAppendChild table (Just caption)
-    nodeAppendChild table (Just row)
-
+    -- Sort the languages, group by tasks completed, and add rows
+    -- for each group with the same number of completed tasks.
     mapM_ (showRanking doc table) $ 
           zip [1..] $ 
           groupBy ((==) `on` quantity) $
           sortBy (flip compare `on` quantity) allLanguages
 
+    -- Add the completed table to the document body for display.
     nodeAppendChild body (Just table)
     return ()
 
