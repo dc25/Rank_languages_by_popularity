@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -286,7 +286,7 @@ function h$_hs_bytestring_long_long_uint_hex(x_a, x_b, buf_d, buf_o) {
     h$ret1 = next_free;
     return buf_d;
 }
-/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -376,7 +376,7 @@ goog.crypt.Hash.prototype.update = goog.abstractMethod;
  *     from the internal accumulator.
  */
 goog.crypt.Hash.prototype.digest = goog.abstractMethod;
-/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -807,7 +807,7 @@ goog.crypt.Md5.prototype.digest = function() {
   }
   return digest;
 };
-/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -1620,7 +1620,7 @@ function h$shutdownHaskellAndExit(code, fast) {
 function h$rand() {
   return (32768 * Math.random()) & 32767;
 }
-/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -1679,7 +1679,7 @@ function h$hashable_getRandomBytes(dest_d, dest_o, len) {
   }
   return len;
 }
-/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -1914,7 +1914,7 @@ function h$_hs_text_encode_utf8(destp_v, destp_o, src_v, srcoff, srclen) {
   }
   destp_v.arr[destp_o][1] = dest;
 }
-/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -2423,7 +2423,7 @@ function h$chmod(path_d, path_o, m) {
     } else
         return h$unsupported(-1);
 }
-/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -2459,7 +2459,7 @@ function h$filepath_isWindows() {
     if(h$isNode && process.platform === 'win32') return true;
   return false;
 }
-/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -2549,7 +2549,7 @@ function h$flattenObj(o) {
     }
     return l;
 }
-/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
