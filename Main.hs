@@ -22,7 +22,7 @@ import GHCJS.DOM.HTMLTableRowElement (castToHTMLTableRowElement)
 import GHCJS.DOM.HTMLTableCellElement (castToHTMLTableCellElement)
 import GHCJS.DOM.Node (nodeAppendChild)
 import GHCJS.Foreign (syncCallback1, ForeignRetention(NeverRetain), fromJSString)
-import GHCJS.Types (JSFun)
+import GHCJS.Types (JSFun, JSString)
 
 import RosettaApi
 
@@ -120,33 +120,30 @@ queryStr = "http://rosettacode.org/mw/api.php?" ++
            "&prop=categoryinfo" ++
            "&callback=cb" 
 
-respondToQuery :: [Language] -> Text -> IO ()
+foreign import javascript unsafe 
+    "cb = function(json) { $1(JSON.stringify(json)); }"
+    js_set_cb :: JSFun a -> IO ()
+
+respondToQuery :: [Language] -> JSString -> IO ()
 respondToQuery ls response = do
-    let Just (Report continue langs) = decode $ encodeUtf8 response
+    let Just (Report continue langs) = decode $ encodeUtf8 $ fromJSString response
     let accLanguages = ls ++ map snd (toList langs)
 
-    -- If there is a continue string, recusively continue the query.
     case continue of
+        -- If there is no continue string we are done so display the accumulated languages.
         Nothing -> showLanguages accLanguages
 
+        -- If there is a continue string, recusively continue the query.
         Just continueStr -> do
             let continueQueryStr = queryStr ++ 
                    "&gcmcontinue=" ++ urlEncode continueStr
             runQuery accLanguages continueQueryStr
 
-foreign import javascript unsafe 
-    "cb = function(json) { $1(JSON.stringify(json)); }"
-    js_set_cb :: JSFun a -> IO ()
-
-setQueryResponseCallback :: (Text -> IO ()) -> IO ()
-setQueryResponseCallback cb = do
-    responder <- syncCallback1 NeverRetain False (cb.fromJSString)
-    js_set_cb responder
-
--- Issue query to get a list of Language descriptions
 runQuery :: [Language] -> String -> IO ()
 runQuery ls query = do
-    setQueryResponseCallback $ respondToQuery ls
+    let cb = respondToQuery ls
+    responder <- syncCallback1 NeverRetain False cb
+    js_set_cb responder
     Just webView <- currentWindow
     Just doc <- webViewGetDomDocument webView
     Just body <- documentGetBody doc
