@@ -6,6 +6,7 @@ import Network.HTTP.Conduit (simpleHttp)
 import Data.List (sortBy, groupBy)
 import Data.Function (on)
 import Data.Map (Map, toList)
+import Data.ByteString.Lazy (ByteString)
 
 -- Record representing a single language.  
 data Language =
@@ -83,10 +84,9 @@ queryStr = "http://rosettacode.org/mw/api.php?" ++
            "&gcmlimit=100" ++ 
            "&prop=categoryinfo" 
 
--- Issue query to get a list of Language descriptions
-runQuery :: [Language] -> String -> IO ()
-runQuery ls query = do
-    Just (Report continue langs) <- decode <$> simpleHttp query 
+respondToQuery :: [Language] -> ByteString -> IO ()
+respondToQuery ls response = do
+    let Just (Report continue langs) = decode response
     let accLanguages = ls ++ map snd (toList langs)
 
     case continue of
@@ -95,8 +95,15 @@ runQuery ls query = do
 
         -- If there is a continue string, recursively continue the query.
         Just continueStr -> do
-            let continueQueryStr = queryStr ++ "&gcmcontinue=" ++ urlEncode continueStr
+            let continueQueryStr = queryStr ++ 
+                   "&gcmcontinue=" ++ urlEncode continueStr
             runQuery accLanguages continueQueryStr
+
+-- Issue query to get a list of Language descriptions
+runQuery :: [Language] -> String -> IO ()
+runQuery ls query = do
+    queryResponse <- simpleHttp query 
+    respondToQuery ls queryResponse
 
 main :: IO ()
 main = runQuery [] queryStr
