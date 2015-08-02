@@ -25041,7 +25041,7 @@ function h$$BV()
   var d = h$stack[(h$sp - 1)];
   h$sp -= 6;
   var e = h$fromHsString(d);
-  b["innerText"] = e;
+  b["innerHTML"] = e;
   h$pp6(c, h$$BW);
   h$l5(h$c1(h$baseZCGHCziBaseziJust_con_e, h$c1(h$ghcjszmprimZCGHCJSziPrimziJSRef_con_e, b)), a,
   h$ghcjszuHXVFfu8XQIWJ1W77s2SHGoZCGHCJSziDOMziTypeszizdfGObjectClassHTMLTableCellElement,
@@ -25127,7 +25127,7 @@ function h$$BO()
   var d = h$stack[(h$sp - 1)];
   h$sp -= 9;
   var e = h$fromHsString(d);
-  b["innerText"] = e;
+  b["innerHTML"] = e;
   h$pp72(c, h$$BP);
   h$l5(h$c1(h$baseZCGHCziBaseziJust_con_e, h$c1(h$ghcjszmprimZCGHCJSziPrimziJSRef_con_e, b)), a,
   h$ghcjszuHXVFfu8XQIWJ1W77s2SHGoZCGHCJSziDOMziTypeszizdfGObjectClassHTMLTableCellElement,
@@ -25204,7 +25204,7 @@ function h$$BI()
   var d = h$stack[(h$sp - 1)];
   h$sp -= 10;
   var e = h$fromHsString(d);
-  b["innerText"] = e;
+  b["innerHTML"] = e;
   h$pp136(c, h$$BJ);
   h$l5(h$c1(h$baseZCGHCziBaseziJust_con_e, h$c1(h$ghcjszmprimZCGHCJSziPrimziJSRef_con_e, b)), a,
   h$ghcjszuHXVFfu8XQIWJ1W77s2SHGoZCGHCJSziDOMziTypeszizdfGObjectClassHTMLTableCellElement,
@@ -25511,7 +25511,7 @@ function h$$Bk()
   var d = h$stack[(h$sp - 1)];
   h$sp -= 9;
   var e = h$fromHsString(a);
-  d["innerText"] = e;
+  d["innerHTML"] = e;
   h$pp96(c, h$$Bl);
   h$l5(h$c1(h$baseZCGHCziBaseziJust_con_e, h$c1(h$ghcjszmprimZCGHCJSziPrimziJSRef_con_e, d)), b,
   h$ghcjszuHXVFfu8XQIWJ1W77s2SHGoZCGHCJSziDOMziTypeszizdfGObjectClassHTMLTableCellElement,
@@ -25584,7 +25584,7 @@ function h$$Be()
   var c = h$stack[(h$sp - 1)];
   h$sp -= 9;
   var d = h$fromHsString(a);
-  c["innerText"] = d;
+  c["innerHTML"] = d;
   h$pp128(h$$Bf);
   h$l5(h$c1(h$baseZCGHCziBaseziJust_con_e, h$c1(h$ghcjszmprimZCGHCJSziPrimziJSRef_con_e, c)), b,
   h$ghcjszuHXVFfu8XQIWJ1W77s2SHGoZCGHCJSziDOMziTypeszizdfGObjectClassHTMLTableCellElement,
@@ -25657,7 +25657,7 @@ function h$$A8()
   var c = h$stack[(h$sp - 1)];
   h$sp -= 9;
   var d = h$fromHsString(a);
-  c["innerText"] = d;
+  c["innerHTML"] = d;
   h$pp128(h$$A9);
   h$l5(h$c1(h$baseZCGHCziBaseziJust_con_e, h$c1(h$ghcjszmprimZCGHCJSziPrimziJSRef_con_e, c)), b,
   h$ghcjszuHXVFfu8XQIWJ1W77s2SHGoZCGHCJSziDOMziTypeszizdfGObjectClassHTMLTableCellElement,
@@ -25769,7 +25769,7 @@ function h$$AZ()
   var c = h$stack[(h$sp - 1)];
   h$sp -= 7;
   var d = h$fromHsString(a);
-  c["innerText"] = d;
+  c["innerHTML"] = d;
   var e = h$c1(h$$B3, b);
   h$pp48(e, h$$A0);
   h$l5(h$c1(h$baseZCGHCziBaseziJust_con_e, h$c1(h$ghcjszmprimZCGHCJSziPrimziJSRef_con_e, c)), e,

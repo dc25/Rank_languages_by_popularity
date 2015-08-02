@@ -12,7 +12,7 @@ import Data.Text.Lazy.Encoding (encodeUtf8)
 
 import GHCJS.DOM (webViewGetDomDocument, runWebGUI, WebView, currentWindow)
 import GHCJS.DOM.Document (documentGetBody, documentCreateElement,Document)
-import GHCJS.DOM.HTMLElement (htmlElementSetInnerText)
+import GHCJS.DOM.HTMLElement (htmlElementSetInnerHTML)
 import GHCJS.DOM.HTMLDivElement (castToHTMLDivElement)
 import GHCJS.DOM.HTMLScriptElement (castToHTMLScriptElement, htmlScriptElementSetSrc)
 import GHCJS.DOM.HTMLParagraphElement (castToHTMLParagraphElement)
@@ -40,7 +40,7 @@ showLanguage doc table rank tie (Language languageName languageQuantity) = do
                       documentCreateElement doc ("td" :: String)
 
     let rankString = show rank ++ (if tie then " (tie)" else "") :: String
-    htmlElementSetInnerText pRank $ rankString
+    htmlElementSetInnerHTML pRank $ rankString
 
     nodeAppendChild row (Just pRank)
 
@@ -48,7 +48,7 @@ showLanguage doc table rank tie (Language languageName languageQuantity) = do
     Just pName <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("td" :: String)
 
-    htmlElementSetInnerText pName $ ( drop 9 languageName )
+    htmlElementSetInnerHTML pName $ ( drop 9 languageName )
 
     nodeAppendChild row (Just pName)
 
@@ -56,7 +56,7 @@ showLanguage doc table rank tie (Language languageName languageQuantity) = do
     Just pQuantity <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("td" :: String)
 
-    htmlElementSetInnerText pQuantity $ show languageQuantity
+    htmlElementSetInnerHTML pQuantity $ show languageQuantity
 
     nodeAppendChild row (Just pQuantity)
 
@@ -82,7 +82,7 @@ showLanguages allLanguages = do
                       documentCreateElement doc ("caption" :: String)
 
 
-    htmlElementSetInnerText caption $ ("Rosetta Code Language Rankings" :: String)
+    htmlElementSetInnerHTML caption $ ("Rosetta Code Language Rankings" :: String)
 
     nodeAppendChild table (Just caption)
 
@@ -96,7 +96,7 @@ showLanguages allLanguages = do
     Just pRank <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("th" :: String)
 
-    htmlElementSetInnerText pRank $ ("Rank" :: String)
+    htmlElementSetInnerHTML pRank $ ("Rank" :: String)
 
     nodeAppendChild row (Just pRank)
 
@@ -104,7 +104,7 @@ showLanguages allLanguages = do
     Just pName <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("th" :: String)
 
-    htmlElementSetInnerText pName $ ("Language" :: String)
+    htmlElementSetInnerHTML pName $ ("Language" :: String)
 
     nodeAppendChild row (Just pName)
 
@@ -112,7 +112,7 @@ showLanguages allLanguages = do
     Just pQuantity <- fmap castToHTMLTableCellElement <$> 
                       documentCreateElement doc ("th" :: String)
 
-    htmlElementSetInnerText pQuantity $ ("Completed Tasks" :: String)
+    htmlElementSetInnerHTML pQuantity $ ("Completed Tasks" :: String)
 
     nodeAppendChild row (Just pQuantity)
 
