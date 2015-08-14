@@ -134,18 +134,14 @@ queryStr = "http://rosettacode.org/mw/api.php?" ++
            "&action=query" ++ 
            "&generator=categorymembers" ++ 
            "&gcmtitle=Category:Programming%20Languages" ++ 
-           "&gcmlimit=100" ++ 
+           "&gcmlimit=500" ++ 
            "&prop=categoryinfo" ++
-           "&callback=cb" 
-
-foreign import javascript unsafe 
-    "cb = function(json) { $1(JSON.stringify(json)); }"
-    js_set_cb :: JSFun a -> IO ()
+           "&callback=javascriptCallback" -- specify javascript callback function.
 
 respondToQuery :: [Language] -> JSString -> IO ()
-respondToQuery ls response = do
+respondToQuery languagesSoFar response = do
     let Just (Report continue langs) = decode $ encodeUtf8 $ fromJSString response
-    let accLanguages = ls ++ map snd (toList langs)
+    let accLanguages = languagesSoFar ++ map snd (toList langs)
 
     case continue of
         -- If there is no continue string we are done so display the accumulated languages.
@@ -153,21 +149,40 @@ respondToQuery ls response = do
 
         -- If there is a continue string, recusively continue the query.
         Just continueStr -> do
+            -- append the continuation string to the query string.
             let continueQueryStr = queryStr ++ 
                    "&gcmcontinue=" ++ urlEncode continueStr
+
+            -- continue the query with the languages accumulated so far.
             runQuery accLanguages continueQueryStr
 
+-- assign a haskell function to the javascript callback function
+foreign import javascript unsafe 
+    "javascriptCallback = function(json) { $1(JSON.stringify(json)); }"
+    js_set_javascriptCallback :: JSFun a -> IO ()
+
 runQuery :: [Language] -> String -> IO ()
-runQuery ls query = do
-    let cb = respondToQuery ls
-    responder <- syncCallback1 NeverRetain False cb
-    js_set_cb responder
+runQuery languagesSoFar query = do
+    -- callback is respondToQuery partially applied to languages processed so far.
+    let haskellCallback = respondToQuery languagesSoFar
+
+    -- make javascript-accessible version of callback
+    responder <- syncCallback1 NeverRetain False haskellCallback
+
+    -- assign callback to javascript variable "javascriptCallback"
+    js_set_javascriptCallback responder
+
+    -- create a script element
     Just webView <- currentWindow
     Just doc <- webViewGetDomDocument webView
     Just body <- documentGetBody doc
     Just newScript <- fmap castToHTMLScriptElement <$> 
                       documentCreateElement doc ("script" :: String)
+
+    -- put the query in the script element.
     htmlScriptElementSetSrc newScript query
+
+    -- put the script element with the query in the browser document body.
     nodeAppendChild body (Just newScript)
     return ()
 

@@ -5,7 +5,7 @@ module RosettaApi (
 ) where
 
 import Data.Aeson 
-import Data.Map (Map, toList)
+import Data.Map (Map)
 
 -- Record representing a single language.  
 data Language =
