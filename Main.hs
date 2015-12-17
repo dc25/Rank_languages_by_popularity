@@ -2,38 +2,27 @@
 
 import Data.Aeson (decode)
 import Network.HTTP.Base (urlEncode)
-import Network.HTTP.Conduit (simpleHttp)
 import Data.List (sortBy, groupBy)
 import Data.Function (on)
-import Data.Map (Map, toList)
-import Data.ByteString.Lazy (pack, ByteString)
-import Data.Text.Lazy (pack, Text)
+import Data.Map (toList)
+import Data.Text.Lazy (pack)
 import Data.Text.Lazy.Encoding (encodeUtf8)
+import Data.JSString (unpack)
 
--- import GHCJS.DOM.EventM (on)
--- import Control.Monad.Trans (liftIO)
-import Data.JSString (JSString, unpack)
-
-import GHCJS.DOM (webViewGetDomDocument, runWebGUI, WebView, currentWindow)
+import GHCJS.DOM (webViewGetDomDocument, currentWindow)
 import GHCJS.DOM.Document (getBody, createElement,Document)
 import GHCJS.DOM.Element (setInnerHTML)
--- import GHCJS.DOM.HTMLElement (setInnerHTML)
-import GHCJS.DOM.HTMLDivElement (castToHTMLDivElement)
 import GHCJS.DOM.HTMLScriptElement (castToHTMLScriptElement, setSrc)
-import GHCJS.DOM.HTMLParagraphElement (castToHTMLParagraphElement)
 import GHCJS.DOM.HTMLTableElement (HTMLTableElement, castToHTMLTableElement)
 import GHCJS.DOM.HTMLTableCaptionElement (castToHTMLTableCaptionElement)
 import GHCJS.DOM.HTMLTableRowElement (castToHTMLTableRowElement)
 import GHCJS.DOM.HTMLTableCellElement (castToHTMLTableCellElement)
 import GHCJS.DOM.Node (appendChild)
-import GHCJS.Foreign 
 import GHCJS.Foreign.Callback(Callback, syncCallback1, OnBlocked(ContinueAsync))
--- import GHCJS.Foreign (syncCallback1, ForeignRetention(NeverRetain))
 import GHCJS.Types (JSVal)
 import GHCJS.Marshal(fromJSVal)
--- import GHCJS.Types (JSString)
 
-import RosettaApi
+import RosettaApi(Language(..), quantity, Report(..))
 
 -- Pretty print a single language
 showLanguage :: Document -> HTMLTableElement -> Int -> Bool -> Language -> IO ()
@@ -49,7 +38,7 @@ showLanguage doc table rank tie (Language languageName languageQuantity) = do
                       createElement doc (Just "td" :: Maybe String)
 
     let rankString = Just $ show rank ++ (if tie then " (tie)" else "")
-    setInnerHTML pRank $ rankString
+    setInnerHTML pRank rankString
 
     appendChild row (Just pRank)
 
@@ -57,7 +46,7 @@ showLanguage doc table rank tie (Language languageName languageQuantity) = do
     Just pName <- fmap castToHTMLTableCellElement <$> 
                       createElement doc (Just "td" :: Maybe String)
 
-    setInnerHTML pName $ ( Just $ drop 9 languageName )
+    setInnerHTML pName ( Just $ drop 9 languageName )
 
     appendChild row (Just pName)
 
@@ -91,7 +80,7 @@ showLanguages allLanguages = do
                       createElement doc (Just "caption" :: Maybe String)
 
 
-    setInnerHTML caption $ (Just "Rosetta Code Language Rankings" :: Maybe String)
+    setInnerHTML caption (Just "Rosetta Code Language Rankings" :: Maybe String)
 
     appendChild table (Just caption)
 
@@ -105,7 +94,7 @@ showLanguages allLanguages = do
     Just pRank <- fmap castToHTMLTableCellElement <$> 
                       createElement doc (Just "th" :: Maybe String)
 
-    setInnerHTML pRank $ (Just "Rank" :: Maybe String)
+    setInnerHTML pRank (Just "Rank" :: Maybe String)
 
     appendChild row (Just pRank)
 
@@ -171,13 +160,6 @@ foreign import javascript unsafe
     "javascriptCallback = function(json) { $1(JSON.stringify(json)); }"
     js_set_javascriptCallback :: Callback a -> IO ()
 
-foreign import javascript unsafe "js_callback_($1)" 
-    call_callback :: JSString -> IO ()
-
-foreign import javascript unsafe "js_callback_ = $1"
-    set_callback :: Callback a -> IO ()
-
-
 runQuery :: [Language] -> String -> IO ()
 runQuery languagesSoFar query = do
     -- callback is respondToQuery partially applied to languages processed so far.
@@ -193,7 +175,7 @@ runQuery languagesSoFar query = do
     Just webView <- currentWindow
     Just doc <- webViewGetDomDocument webView
     Just body <- getBody doc
-    Just newElement <- createElement doc $ (Just "script" :: Maybe String)
+    Just newElement <- createElement doc (Just "script" :: Maybe String)
     let newScript = castToHTMLScriptElement newElement
     -- Just newScript <- fmap castToHTMLScriptElement <$> elem
 
