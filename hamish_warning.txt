@@ -1,1 +1,0 @@
-https://github.com/ghcjs/ghcjs-dom/issues/15
