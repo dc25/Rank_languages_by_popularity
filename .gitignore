@@ -1,4 +1,6 @@
 Setup.hs
+.cabal-sandbox/
+cabal.sandbox.config
 .*.swp
 .*.swo
 *~
