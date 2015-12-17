@@ -6,23 +6,32 @@ import Network.HTTP.Conduit (simpleHttp)
 import Data.List (sortBy, groupBy)
 import Data.Function (on)
 import Data.Map (Map, toList)
-import Data.ByteString.Lazy (ByteString)
-import Data.Text.Lazy (Text)
+import Data.ByteString.Lazy (pack, ByteString)
+import Data.Text.Lazy (pack, Text)
 import Data.Text.Lazy.Encoding (encodeUtf8)
 
+-- import GHCJS.DOM.EventM (on)
+-- import Control.Monad.Trans (liftIO)
+import Data.JSString (JSString, unpack)
+
 import GHCJS.DOM (webViewGetDomDocument, runWebGUI, WebView, currentWindow)
-import GHCJS.DOM.Document (documentGetBody, documentCreateElement,Document)
-import GHCJS.DOM.HTMLElement (htmlElementSetInnerHTML)
+import GHCJS.DOM.Document (getBody, createElement,Document)
+import GHCJS.DOM.Element (setInnerHTML)
+-- import GHCJS.DOM.HTMLElement (setInnerHTML)
 import GHCJS.DOM.HTMLDivElement (castToHTMLDivElement)
-import GHCJS.DOM.HTMLScriptElement (castToHTMLScriptElement, htmlScriptElementSetSrc)
+import GHCJS.DOM.HTMLScriptElement (castToHTMLScriptElement, setSrc)
 import GHCJS.DOM.HTMLParagraphElement (castToHTMLParagraphElement)
 import GHCJS.DOM.HTMLTableElement (HTMLTableElement, castToHTMLTableElement)
 import GHCJS.DOM.HTMLTableCaptionElement (castToHTMLTableCaptionElement)
 import GHCJS.DOM.HTMLTableRowElement (castToHTMLTableRowElement)
 import GHCJS.DOM.HTMLTableCellElement (castToHTMLTableCellElement)
-import GHCJS.DOM.Node (nodeAppendChild)
-import GHCJS.Foreign (syncCallback1, ForeignRetention(NeverRetain), fromJSString)
-import GHCJS.Types (JSFun, JSString)
+import GHCJS.DOM.Node (appendChild)
+import GHCJS.Foreign 
+import GHCJS.Foreign.Callback(Callback, syncCallback1, OnBlocked(ContinueAsync))
+-- import GHCJS.Foreign (syncCallback1, ForeignRetention(NeverRetain))
+import GHCJS.Types (JSVal)
+import GHCJS.Marshal(fromJSVal)
+-- import GHCJS.Types (JSString)
 
 import RosettaApi
 
@@ -32,33 +41,33 @@ showLanguage doc table rank tie (Language languageName languageQuantity) = do
 
     -- Add a new row to the table.
     Just row <- fmap castToHTMLTableRowElement <$> 
-                      documentCreateElement doc ("tr" :: String)
-    nodeAppendChild table (Just row)
+                      createElement doc (Just "tr" :: Maybe String)
+    appendChild table (Just row)
 
     -- Add a ranking entry to the new row.
     Just pRank <- fmap castToHTMLTableCellElement <$> 
-                      documentCreateElement doc ("td" :: String)
+                      createElement doc (Just "td" :: Maybe String)
 
-    let rankString = show rank ++ (if tie then " (tie)" else "") :: String
-    htmlElementSetInnerHTML pRank $ rankString
+    let rankString = Just $ show rank ++ (if tie then " (tie)" else "")
+    setInnerHTML pRank $ rankString
 
-    nodeAppendChild row (Just pRank)
+    appendChild row (Just pRank)
 
     -- Add a name entry to the new row.
     Just pName <- fmap castToHTMLTableCellElement <$> 
-                      documentCreateElement doc ("td" :: String)
+                      createElement doc (Just "td" :: Maybe String)
 
-    htmlElementSetInnerHTML pName $ ( drop 9 languageName )
+    setInnerHTML pName $ ( Just $ drop 9 languageName )
 
-    nodeAppendChild row (Just pName)
+    appendChild row (Just pName)
 
     -- Add a quantity entry to the new row.
     Just pQuantity <- fmap castToHTMLTableCellElement <$> 
-                      documentCreateElement doc ("td" :: String)
+                      createElement doc (Just "td" :: Maybe String)
 
-    htmlElementSetInnerHTML pQuantity $ show languageQuantity
+    setInnerHTML pQuantity $ Just $ show languageQuantity
 
-    nodeAppendChild row (Just pQuantity)
+    appendChild row (Just pQuantity)
 
     return ()
 
@@ -72,49 +81,49 @@ showLanguages :: [Language] -> IO ()
 showLanguages allLanguages = do
     Just webView <- currentWindow
     Just doc <- webViewGetDomDocument webView
-    Just body <- documentGetBody doc
+    Just body <- getBody doc
 
     Just table <- fmap castToHTMLTableElement <$> 
-                      documentCreateElement doc ("table" :: String)
+                      createElement doc (Just "table" :: Maybe String)
 
     -- Add a caption to the table
     Just caption <- fmap castToHTMLTableCaptionElement <$> 
-                      documentCreateElement doc ("caption" :: String)
+                      createElement doc (Just "caption" :: Maybe String)
 
 
-    htmlElementSetInnerHTML caption $ ("Rosetta Code Language Rankings" :: String)
+    setInnerHTML caption $ (Just "Rosetta Code Language Rankings" :: Maybe String)
 
-    nodeAppendChild table (Just caption)
+    appendChild table (Just caption)
 
     -- Add a header row to the table.
     Just row <- fmap castToHTMLTableRowElement <$> 
-                      documentCreateElement doc ("tr" :: String)
+                      createElement doc (Just "tr" :: Maybe String)
 
-    nodeAppendChild table (Just row)
+    appendChild table (Just row)
 
     -- Add a rank header to the header row.
     Just pRank <- fmap castToHTMLTableCellElement <$> 
-                      documentCreateElement doc ("th" :: String)
+                      createElement doc (Just "th" :: Maybe String)
 
-    htmlElementSetInnerHTML pRank $ ("Rank" :: String)
+    setInnerHTML pRank $ (Just "Rank" :: Maybe String)
 
-    nodeAppendChild row (Just pRank)
+    appendChild row (Just pRank)
 
     -- Add a language name header to the header row.
     Just pName <- fmap castToHTMLTableCellElement <$> 
-                      documentCreateElement doc ("th" :: String)
+                      createElement doc (Just "th" :: Maybe String)
 
-    htmlElementSetInnerHTML pName $ ("Language" :: String)
+    setInnerHTML pName (Just "Language" :: Maybe String)
 
-    nodeAppendChild row (Just pName)
+    appendChild row (Just pName)
 
     -- Add a quantity header to the header row.
     Just pQuantity <- fmap castToHTMLTableCellElement <$> 
-                      documentCreateElement doc ("th" :: String)
+                      createElement doc (Just "th" :: Maybe String)
 
-    htmlElementSetInnerHTML pQuantity $ ("Completed Tasks" :: String)
+    setInnerHTML pQuantity (Just "Completed Tasks" :: Maybe String)
 
-    nodeAppendChild row (Just pQuantity)
+    appendChild row (Just pQuantity)
 
     -- Sort the languages, group by tasks completed, and add rows
     -- for each group with the same number of completed tasks.
@@ -124,7 +133,7 @@ showLanguages allLanguages = do
           sortBy (flip compare `on` quantity) allLanguages
 
     -- Add the completed table to the document body for display.
-    nodeAppendChild body (Just table)
+    appendChild body (Just table)
     return ()
 
 -- Mediawiki api style query to send to rosettacode.org
@@ -138,9 +147,10 @@ queryStr = "http://rosettacode.org/mw/api.php?" ++
            "&prop=categoryinfo" ++
            "&callback=javascriptCallback" -- specify javascript callback function.
 
-respondToQuery :: [Language] -> JSString -> IO ()
+respondToQuery :: [Language] -> JSVal -> IO ()
 respondToQuery languagesSoFar response = do
-    let Just (Report continue langs) = decode $ encodeUtf8 $ fromJSString response
+    Just str <- fromJSVal response
+    let Just (Report continue langs) = decode $ encodeUtf8 $ Data.Text.Lazy.pack $ unpack str
     let accLanguages = languagesSoFar ++ map snd (toList langs)
 
     case continue of
@@ -159,7 +169,14 @@ respondToQuery languagesSoFar response = do
 -- assign a haskell function to the javascript callback function
 foreign import javascript unsafe 
     "javascriptCallback = function(json) { $1(JSON.stringify(json)); }"
-    js_set_javascriptCallback :: JSFun a -> IO ()
+    js_set_javascriptCallback :: Callback a -> IO ()
+
+foreign import javascript unsafe "js_callback_($1)" 
+    call_callback :: JSString -> IO ()
+
+foreign import javascript unsafe "js_callback_ = $1"
+    set_callback :: Callback a -> IO ()
+
 
 runQuery :: [Language] -> String -> IO ()
 runQuery languagesSoFar query = do
@@ -167,7 +184,7 @@ runQuery languagesSoFar query = do
     let haskellCallback = respondToQuery languagesSoFar
 
     -- make javascript-accessible version of callback
-    responder <- syncCallback1 NeverRetain False haskellCallback
+    responder <- syncCallback1 ContinueAsync haskellCallback
 
     -- assign callback to javascript variable "javascriptCallback"
     js_set_javascriptCallback responder
@@ -175,15 +192,16 @@ runQuery languagesSoFar query = do
     -- create a script element
     Just webView <- currentWindow
     Just doc <- webViewGetDomDocument webView
-    Just body <- documentGetBody doc
-    Just newScript <- fmap castToHTMLScriptElement <$> 
-                      documentCreateElement doc ("script" :: String)
+    Just body <- getBody doc
+    Just newElement <- createElement doc $ (Just "script" :: Maybe String)
+    let newScript = castToHTMLScriptElement newElement
+    -- Just newScript <- fmap castToHTMLScriptElement <$> elem
 
     -- put the query in the script element.
-    htmlScriptElementSetSrc newScript query
+    setSrc newScript query
 
     -- put the script element with the query in the browser document body.
-    nodeAppendChild body (Just newScript)
+    appendChild body (Just newScript)
     return ()
 
 main :: IO ()
