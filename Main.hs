@@ -198,9 +198,6 @@ runQuery languagesSoFar query = do
     Just webView <- currentWindow
     Just doc <- webViewGetDomDocument webView
     Just body <- getBody doc
-    Just newElement <- scriptElement doc 
-
-    let newScript = castToHTMLScriptElement newElement
     Just newScript <- scriptElement doc 
 
     -- put the query in the script element.
