@@ -24,34 +24,37 @@ import GHCJS.Marshal(fromJSVal)
 
 import RosettaApi(Language(..), quantity, Report(..))
 
+jStr :: String -> Maybe String
+jStr = Just 
+
 tableElement :: Document -> IO (Maybe HTMLTableElement)
 tableElement doc = 
-    let element = createElement doc $ Just ("table" :: String)
+    let element = createElement doc $ jStr "table"
     in fmap (fmap castToHTMLTableElement) element
 
 captionElement :: Document -> IO (Maybe HTMLTableCaptionElement)
 captionElement doc = 
-    let element = createElement doc $ Just ("caption" :: String)
+    let element = createElement doc $ jStr "caption" 
     in fmap (fmap castToHTMLTableCaptionElement) element
 
 rowElement :: Document -> IO (Maybe HTMLTableRowElement)
 rowElement doc = 
-    let element = createElement doc $ Just ("tr" :: String)
+    let element = createElement doc $ jStr "tr" 
     in fmap (fmap castToHTMLTableRowElement) element
 
 cellElement :: Document -> IO (Maybe HTMLTableCellElement)
 cellElement doc = 
-    let element = createElement doc $ Just ("td" :: String)
+    let element = createElement doc $ jStr "td" 
     in fmap (fmap castToHTMLTableCellElement) element
 
 headerCellElement :: Document -> IO (Maybe HTMLTableCellElement)
 headerCellElement doc = 
-    let element = createElement doc $ Just ("th" :: String)
+    let element = createElement doc $ jStr "th" 
     in fmap (fmap castToHTMLTableCellElement) element
 
 scriptElement :: Document -> IO (Maybe HTMLScriptElement)
 scriptElement doc = 
-    let element = createElement doc $ Just ("script" :: String)
+    let element = createElement doc $ jStr "script" 
     in fmap (fmap castToHTMLScriptElement) element
 
 -- Pretty print a single language
@@ -104,7 +107,7 @@ showLanguages allLanguages = do
     -- Add a caption to the table
     Just caption <- captionElement doc
 
-    setInnerHTML caption (Just "Rosetta Code Language Rankings" :: Maybe String)
+    setInnerHTML caption (jStr "Rosetta Code Language Rankings")
 
     appendChild table (Just caption)
 
@@ -116,21 +119,21 @@ showLanguages allLanguages = do
     -- Add a rank header to the header row.
     Just pRank <- headerCellElement doc
 
-    setInnerHTML pRank (Just "Rank" :: Maybe String)
+    setInnerHTML pRank (jStr "Rank")
 
     appendChild row (Just pRank)
 
     -- Add a language name header to the header row.
     Just pName <- headerCellElement doc
 
-    setInnerHTML pName (Just "Language" :: Maybe String)
+    setInnerHTML pName (jStr "Language")
 
     appendChild row (Just pName)
 
     -- Add a quantity header to the header row.
     Just pQuantity <- headerCellElement doc
 
-    setInnerHTML pQuantity (Just "Completed Tasks" :: Maybe String)
+    setInnerHTML pQuantity (jStr "Completed Tasks")
 
     appendChild row (Just pQuantity)
 
