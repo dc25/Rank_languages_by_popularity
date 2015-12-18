@@ -12,11 +12,11 @@ import Data.JSString (unpack)
 import GHCJS.DOM (webViewGetDomDocument, currentWindow)
 import GHCJS.DOM.Document (getBody, createElement,Document)
 import GHCJS.DOM.Element (setInnerHTML)
-import GHCJS.DOM.HTMLScriptElement (castToHTMLScriptElement, setSrc)
+import GHCJS.DOM.HTMLScriptElement (castToHTMLScriptElement, HTMLScriptElement, setSrc)
 import GHCJS.DOM.HTMLTableElement (HTMLTableElement, castToHTMLTableElement)
-import GHCJS.DOM.HTMLTableCaptionElement (castToHTMLTableCaptionElement)
-import GHCJS.DOM.HTMLTableRowElement (castToHTMLTableRowElement)
-import GHCJS.DOM.HTMLTableCellElement (castToHTMLTableCellElement)
+import GHCJS.DOM.HTMLTableCaptionElement (castToHTMLTableCaptionElement, HTMLTableCaptionElement)
+import GHCJS.DOM.HTMLTableRowElement (castToHTMLTableRowElement,HTMLTableRowElement)
+import GHCJS.DOM.HTMLTableCellElement (castToHTMLTableCellElement, HTMLTableCellElement)
 import GHCJS.DOM.Node (appendChild)
 import GHCJS.Foreign.Callback(Callback, syncCallback1, OnBlocked(ContinueAsync))
 import GHCJS.Types (JSVal)
@@ -24,18 +24,47 @@ import GHCJS.Marshal(fromJSVal)
 
 import RosettaApi(Language(..), quantity, Report(..))
 
+tableElement :: Document -> IO (Maybe HTMLTableElement)
+tableElement doc = 
+    let element = createElement doc $ Just ("table" :: String)
+    in fmap (fmap castToHTMLTableElement) element
+
+captionElement :: Document -> IO (Maybe HTMLTableCaptionElement)
+captionElement doc = 
+    let element = createElement doc $ Just ("caption" :: String)
+    in fmap (fmap castToHTMLTableCaptionElement) element
+
+rowElement :: Document -> IO (Maybe HTMLTableRowElement)
+rowElement doc = 
+    let element = createElement doc $ Just ("tr" :: String)
+    in fmap (fmap castToHTMLTableRowElement) element
+
+cellElement :: Document -> IO (Maybe HTMLTableCellElement)
+cellElement doc = 
+    let element = createElement doc $ Just ("td" :: String)
+    in fmap (fmap castToHTMLTableCellElement) element
+
+headerCellElement :: Document -> IO (Maybe HTMLTableCellElement)
+headerCellElement doc = 
+    let element = createElement doc $ Just ("th" :: String)
+    in fmap (fmap castToHTMLTableCellElement) element
+
+scriptElement :: Document -> IO (Maybe HTMLScriptElement)
+scriptElement doc = 
+    let element = createElement doc $ Just ("script" :: String)
+    in fmap (fmap castToHTMLScriptElement) element
+
 -- Pretty print a single language
 showLanguage :: Document -> HTMLTableElement -> Int -> Bool -> Language -> IO ()
 showLanguage doc table rank tie (Language languageName languageQuantity) = do
 
     -- Add a new row to the table.
-    Just row <- fmap castToHTMLTableRowElement <$> 
-                      createElement doc (Just "tr" :: Maybe String)
+
+    Just row <- rowElement doc
     appendChild table (Just row)
 
     -- Add a ranking entry to the new row.
-    Just pRank <- fmap castToHTMLTableCellElement <$> 
-                      createElement doc (Just "td" :: Maybe String)
+    Just pRank <- cellElement doc
 
     let rankString = Just $ show rank ++ (if tie then " (tie)" else "")
     setInnerHTML pRank rankString
@@ -43,16 +72,14 @@ showLanguage doc table rank tie (Language languageName languageQuantity) = do
     appendChild row (Just pRank)
 
     -- Add a name entry to the new row.
-    Just pName <- fmap castToHTMLTableCellElement <$> 
-                      createElement doc (Just "td" :: Maybe String)
+    Just pName <- cellElement doc
 
     setInnerHTML pName ( Just $ drop 9 languageName )
 
     appendChild row (Just pName)
 
     -- Add a quantity entry to the new row.
-    Just pQuantity <- fmap castToHTMLTableCellElement <$> 
-                      createElement doc (Just "td" :: Maybe String)
+    Just pQuantity <- cellElement doc
 
     setInnerHTML pQuantity $ Just $ show languageQuantity
 
@@ -72,43 +99,36 @@ showLanguages allLanguages = do
     Just doc <- webViewGetDomDocument webView
     Just body <- getBody doc
 
-    Just table <- fmap castToHTMLTableElement <$> 
-                      createElement doc (Just "table" :: Maybe String)
+    Just table <- tableElement doc
 
     -- Add a caption to the table
-    Just caption <- fmap castToHTMLTableCaptionElement <$> 
-                      createElement doc (Just "caption" :: Maybe String)
-
+    Just caption <- captionElement doc
 
     setInnerHTML caption (Just "Rosetta Code Language Rankings" :: Maybe String)
 
     appendChild table (Just caption)
 
     -- Add a header row to the table.
-    Just row <- fmap castToHTMLTableRowElement <$> 
-                      createElement doc (Just "tr" :: Maybe String)
+    Just row <- rowElement doc
 
     appendChild table (Just row)
 
     -- Add a rank header to the header row.
-    Just pRank <- fmap castToHTMLTableCellElement <$> 
-                      createElement doc (Just "th" :: Maybe String)
+    Just pRank <- headerCellElement doc
 
     setInnerHTML pRank (Just "Rank" :: Maybe String)
 
     appendChild row (Just pRank)
 
     -- Add a language name header to the header row.
-    Just pName <- fmap castToHTMLTableCellElement <$> 
-                      createElement doc (Just "th" :: Maybe String)
+    Just pName <- headerCellElement doc
 
     setInnerHTML pName (Just "Language" :: Maybe String)
 
     appendChild row (Just pName)
 
     -- Add a quantity header to the header row.
-    Just pQuantity <- fmap castToHTMLTableCellElement <$> 
-                      createElement doc (Just "th" :: Maybe String)
+    Just pQuantity <- headerCellElement doc
 
     setInnerHTML pQuantity (Just "Completed Tasks" :: Maybe String)
 
@@ -175,9 +195,10 @@ runQuery languagesSoFar query = do
     Just webView <- currentWindow
     Just doc <- webViewGetDomDocument webView
     Just body <- getBody doc
-    Just newElement <- createElement doc (Just "script" :: Maybe String)
+    Just newElement <- scriptElement doc 
+
     let newScript = castToHTMLScriptElement newElement
-    -- Just newScript <- fmap castToHTMLScriptElement <$> elem
+    Just newScript <- scriptElement doc 
 
     -- put the query in the script element.
     setSrc newScript query
